@@ -106,7 +106,8 @@ metadata:
 data:
  config.yaml: |
   Vpm:
-    ClusterName: aigw-eks
+    # make sure cluster name matches with CE token name created in F5 XC
+    ClusterName: aigw-eks 
     ClusterType: ce
     Config: /etc/vpm/config.yaml
     DisableModules: ["recruiter"]
@@ -116,6 +117,7 @@ data:
     MauricePrivateEndpoint: https://register-tls.ves.volterra.io
     PrivateNIC: eth0
     SkipStages: ["osSetup", "etcd", "kubelet", "master", "voucher", "workload", "controlWorkload", "csi"]
+    # Update below with token value created in F5 XC
     Token: <your-token-here>
     CertifiedHardware: k8s-minikube-voltmesh
 ---
