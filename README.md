@@ -27,9 +27,10 @@ Examples of F5 AI Use Cases utilizing Terraform. For more information on the use
   * [F5XC API certificate](https://docs.cloud.f5.com/docs/how-to/user-mgmt/credentials)
   * [User Domain delegated](https://docs.cloud.f5.com/docs/how-to/app-networking/domain-delegation)
 * [AWS Account](https://aws.amazon.com) - Due to the assets being created, free tier will not work.
-  * The F5 BIG-IP AMI being used from the [AWS Marketplace](https://aws.amazon.com/marketplace) must be subscribed to your account
   * Please make sure resources like VPC and Elastic IP's are below the threshold limit in that aws region
 * [GitHub Account](https://github.com)
+* [NGINX ONE_License](https://www.f5.com/products/nginx/one) - Access to NGINX ONE license is needed for ai gateway.
+* [NGINX PLUS_License](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-plus/) - Access to NGINX PLUS license is needed for ai gateway.
 
 
 ## Development
