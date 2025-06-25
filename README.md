@@ -1,8 +1,8 @@
-# F5 Distributed Cloud Terraform Examples
+# F5 AI Use Case Examples
 
 ## Overview
 
-Examples of F5 AI Use Cases utilizing Terraform. For more information on the use cases covered by this project, please see the following articles and workflow guides:
+Examples of F5 AI Use Cases. For more information on the use cases covered by this project, please see the following articles and workflow guides:
 
 
 ### **F5 AI Gateway**
