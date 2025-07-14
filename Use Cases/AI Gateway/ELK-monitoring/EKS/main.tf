@@ -379,7 +379,7 @@ resource "kubernetes_secret" "f5-license" {
 
     type = "Opaque"
     data = {
-     token = base64encode(local.nginx_plus_jwt)
+     token = local.nginx_plus_jwt
     }
   depends_on = [kubectl_manifest.aigw-ns]
 }
