@@ -50,7 +50,7 @@ Also copy your F5 XC .p12 file to this folder and update line numbers 34 (.p12 f
 .. figure:: assets/site_online.png
 
 
-**STEP 7:** Open the chatbot load balancer domain in browser and have some chat conversation. Make sure you are getting the responses correctly as shown below.
+**STEP 7:** Open the chatbot load balancer domain in browser and have some chat conversation. Make sure you are getting the responses correctly as shown below. If you are seeing any openAI errors, check on third tab `GenAI Model` and keep value as empty.
 
 .. figure:: assets/chatbot_conversation.png
 
