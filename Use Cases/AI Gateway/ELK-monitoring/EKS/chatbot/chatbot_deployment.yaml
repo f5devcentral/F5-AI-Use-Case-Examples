@@ -25,5 +25,4 @@ spec:
               protocol: TCP
           env:
             - name: OPENAI_API_BASE
-              value: "http://node-proxy.node-proxy.svc.cluster.local:3000/v1"
-#              value: "http://aigw.ai-gateway.svc.cluster.local:80/v1"
+              value: "http://aigw.ai-gateway.svc.cluster.local:80/v1"
