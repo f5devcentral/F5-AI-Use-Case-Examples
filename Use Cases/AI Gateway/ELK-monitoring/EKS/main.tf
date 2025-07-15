@@ -376,7 +376,6 @@ resource "kubernetes_secret" "f5-license" {
         name = "f5-license"
         namespace = "ai-gateway"
     }
-
     type = "Opaque"
     data = {
      token = local.nginx_plus_jwt
@@ -539,42 +538,6 @@ resource "kubectl_manifest" "chatbot-service" {
 }
 
 ################################################################################
-# Node-Proxy - needed to remove "model" parameter from requests until aigw will not enforce it (v1.1)
-################################################################################
-data "kubectl_path_documents" "node-proxy-ns-manifest" {
-  pattern = "${path.module}/node-proxy/node-proxy_ns.yaml"
-}
-
-resource "kubectl_manifest" "node-proxy-ns" {
-  count     = length(data.kubectl_path_documents.node-proxy-ns-manifest.documents)
-  yaml_body = element(data.kubectl_path_documents.node-proxy-ns-manifest.documents, count.index)
-
-  depends_on = [kubectl_manifest.chatbot-service]
-}
-
-data "kubectl_path_documents" "node-proxy-deployment-manifest" {
-  pattern = "${path.module}/node-proxy/node-proxy_deployment.yaml"
-}
-
-resource "kubectl_manifest" "node-proxy-deployment" {
-  count     = length(data.kubectl_path_documents.node-proxy-deployment-manifest.documents)
-  yaml_body = element(data.kubectl_path_documents.node-proxy-deployment-manifest.documents, count.index)
-
-  depends_on = [kubectl_manifest.node-proxy-ns]
-}
-
-data "kubectl_path_documents" "node-proxy-service-manifest" {
-  pattern = "${path.module}/node-proxy/node-proxy_service.yaml"
-}
-
-resource "kubectl_manifest" "node-proxy-service" {
-  count     = length(data.kubectl_path_documents.node-proxy-service-manifest.documents)
-  yaml_body = element(data.kubectl_path_documents.node-proxy-service-manifest.documents, count.index)
-
-  depends_on = [kubectl_manifest.node-proxy-deployment]
-}
-
-################################################################################
 # F5 XC CE (Kubernetes site)
 ################################################################################
 data "kubectl_path_documents" "f5-ce-k8s-ns-manifest" {
@@ -584,7 +547,7 @@ data "kubectl_path_documents" "f5-ce-k8s-ns-manifest" {
 resource "kubectl_manifest" "f5-ce-k8s-ns" {
   count     = length(data.kubectl_path_documents.f5-ce-k8s-ns-manifest.documents)
   yaml_body = element(data.kubectl_path_documents.f5-ce-k8s-ns-manifest.documents, count.index)
-  depends_on = [kubectl_manifest.node-proxy-service]
+  depends_on = [kubectl_manifest.chatbot-service]
 }
 
 data "kubectl_path_documents" "f5-ce-k8s-config-rbac-manifest" {
@@ -631,6 +594,14 @@ resource "volterra_registration_approval" "k8s-ce" {
   depends_on = [kubectl_manifest.f5-ce-k8s-services]
 }
 
+# temporary file which is needed for site cleanup
+resource "volterra_site_state" "site" {
+  name            = local.ce_site_name
+  state           = "DECOMMISSIONING"
+  when            = "delete"
+  retry           = 5
+  wait_time       = 60
+}
 
 ################################################################################
 # F5 XC LBs and Pools
