@@ -619,7 +619,7 @@ resource "volterra_origin_pool" "chatbot" {
       outside_network = true
       site_locator {
         site {
-          name      = "aigw-eks"
+          name      = local.ce_site_name
           namespace = "system"
           }
         }
@@ -701,7 +701,7 @@ resource "volterra_origin_pool" "minio" {
       outside_network = true
       site_locator {
         site {
-          name      = "aigw-eks"
+          name      = local.ce_site_name
           namespace = "system"
           }
         }
@@ -792,7 +792,7 @@ resource "volterra_origin_pool" "kibana" {
       outside_network = true
       site_locator {
         site {
-          name      = "aigw-eks"
+          name      = local.ce_site_name
           namespace = "system"
           }
         }
