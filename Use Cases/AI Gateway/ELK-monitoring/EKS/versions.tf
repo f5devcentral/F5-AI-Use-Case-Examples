@@ -9,7 +9,7 @@ terraform {
     # version awsv6 release has breaking changes so we are using v5 only for now
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.34"
+      version = "5.100.0"
     }
     helm = {
       source  = "hashicorp/helm"
