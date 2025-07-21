@@ -186,7 +186,7 @@ aigw:
     repository: private-registry.f5.com/aigw/aigw
 
     # -- Version tag for the aigw image
-    tag: v1.0.1
+    tag: v1.1.1
 
     pullPolicy: IfNotPresent
 
@@ -315,7 +315,7 @@ processors:
       repository: private-registry.f5.com/aigw/aigw-processors-f5
 
       # -- Version tag for the aigw-processors-f5 image
-      tag: v1.0.0
+      tag: v1.1.0
 
       pullPolicy: IfNotPresent
 
