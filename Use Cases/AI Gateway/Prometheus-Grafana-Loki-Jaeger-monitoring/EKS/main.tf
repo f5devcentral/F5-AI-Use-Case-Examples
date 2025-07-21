@@ -3,13 +3,15 @@
 ################################################################################
 locals {
   name   = "ai-gateway"
-
   region = "us-west-2"
-
   vpc_cidr   = "10.0.0.0/16"
   num_of_azs = 2
 
+  # this namespace should be already present in F5 XC
   f5_xc_namespace = "aigw"
+
+  # Make sure this name matches with the new CE token created in F5 XC
+  ce_site_name      = "aigw-eks"
 
   f5_xc_chatbot_dns = ["chatbot.example.com"]
   f5_xc_minio_dns = ["minio.example.com"]
@@ -17,8 +19,15 @@ locals {
   f5_xc_grafana_dns = ["grafana.example.com"]
   f5_xc_jaeger_dns = ["jaeger.example.com"]
 
+  # nginx one and plus licenses
+  nginx_one_jwt     = var.nginx_one_jwt
+  nginx_plus_jwt    = var.nginx_plus_jwt
+  nginx_registry    = "private-registry.f5.com"
+  nginx_pwd         = "none"
+
   tags = {}
 }
+
 
 ################################################################################
 # Providers
@@ -30,10 +39,8 @@ provider "volterra" {
 }
 
 provider "aws" {
-  region = "us-west-2"
-  alias  = "us-west-2"
+  region = local.region
 }
-
 
 provider "kubernetes" {
   host                   = module.eks.cluster_endpoint
@@ -366,21 +373,46 @@ resource "kubectl_manifest" "aigw-ns" {
   depends_on = [helm_release.ollama]
 }
 
-data "kubectl_path_documents" "aigw-secrets-manifest" {
-  pattern = "${path.module}/ai-gateway/aigw-secrets.yaml"
+
+resource "kubernetes_secret" "f5-license" {
+    metadata {
+        name = "f5-license"
+        namespace = "ai-gateway"
+    }
+
+    type = "Opaque"
+    data = {
+     token = local.nginx_plus_jwt
+    }
+  depends_on = [kubectl_manifest.aigw-ns]
 }
 
-resource "kubectl_manifest" "aigw-secrets" {
-  count     = length(data.kubectl_path_documents.aigw-secrets-manifest.documents)
-  yaml_body = element(data.kubectl_path_documents.aigw-secrets-manifest.documents, count.index)
+resource "kubernetes_secret" "nginx-registry" {
+    metadata {
+        name = "f5-registry-secret"
+        namespace = "ai-gateway"
+    }
 
-  depends_on = [kubectl_manifest.aigw-ns]
+    type = "kubernetes.io/dockerconfigjson"
+
+    data = {
+        ".dockerconfigjson" = jsonencode({
+            auths = {
+                "${local.nginx_registry}" = {
+                    "username" = local.nginx_one_jwt
+                    "password" = local.nginx_pwd
+                    "auth" = base64encode("${local.nginx_one_jwt}:${local.nginx_pwd}")
+                }
+            }
+        })
+    }
+  depends_on = [kubernetes_secret.f5-license]
 }
 
 resource "helm_release" "aigw" {
   name             = "aigw"
   repository       = "oci://private-registry.f5.com/aigw"
-  repository_username = "<Your-NGINX-ONE-JWT-auth-secret-here>"
+  repository_username = local.nginx_one_jwt
   repository_password = "none"
   chart            = "aigw"
   namespace        = "ai-gateway"
@@ -394,7 +426,7 @@ resource "helm_release" "aigw" {
     value = "f5-registry-secret"
   }
 
-  depends_on = [kubectl_manifest.aigw-secrets]
+  depends_on = [kubernetes_secret.nginx-registry]
 }
 
 
@@ -544,42 +576,6 @@ resource "kubectl_manifest" "chatbot-service" {
 }
 
 ################################################################################
-# Node-Proxy - needed to remove "model" parameter from requests until aigw will not enforce it
-################################################################################
-data "kubectl_path_documents" "node-proxy-ns-manifest" {
-  pattern = "${path.module}/node-proxy/node-proxy_ns.yaml"
-}
-
-resource "kubectl_manifest" "node-proxy-ns" {
-  count     = length(data.kubectl_path_documents.node-proxy-ns-manifest.documents)
-  yaml_body = element(data.kubectl_path_documents.node-proxy-ns-manifest.documents, count.index)
-
-  depends_on = [kubectl_manifest.chatbot-service]
-}
-
-data "kubectl_path_documents" "node-proxy-deployment-manifest" {
-  pattern = "${path.module}/node-proxy/node-proxy_deployment.yaml"
-}
-
-resource "kubectl_manifest" "node-proxy-deployment" {
-  count     = length(data.kubectl_path_documents.node-proxy-deployment-manifest.documents)
-  yaml_body = element(data.kubectl_path_documents.node-proxy-deployment-manifest.documents, count.index)
-
-  depends_on = [kubectl_manifest.node-proxy-ns]
-}
-
-data "kubectl_path_documents" "node-proxy-service-manifest" {
-  pattern = "${path.module}/node-proxy/node-proxy_service.yaml"
-}
-
-resource "kubectl_manifest" "node-proxy-service" {
-  count     = length(data.kubectl_path_documents.node-proxy-service-manifest.documents)
-  yaml_body = element(data.kubectl_path_documents.node-proxy-service-manifest.documents, count.index)
-
-  depends_on = [kubectl_manifest.node-proxy-deployment]
-}
-
-################################################################################
 # F5 XC CE (Kubernetes site)
 ################################################################################
 data "kubectl_path_documents" "f5-ce-k8s-ns-manifest" {
@@ -589,7 +585,7 @@ data "kubectl_path_documents" "f5-ce-k8s-ns-manifest" {
 resource "kubectl_manifest" "f5-ce-k8s-ns" {
   count     = length(data.kubectl_path_documents.f5-ce-k8s-ns-manifest.documents)
   yaml_body = element(data.kubectl_path_documents.f5-ce-k8s-ns-manifest.documents, count.index)
-  depends_on = [kubectl_manifest.node-proxy-service]
+  depends_on = [kubectl_manifest.chatbot-service]
 }
 
 data "kubectl_path_documents" "f5-ce-k8s-config-rbac-manifest" {
@@ -623,6 +619,28 @@ resource "kubectl_manifest" "f5-ce-k8s-services" {
   yaml_body = element(data.kubectl_path_documents.f5-ce-k8s-services-manifest.documents, count.index)
   depends_on = [kubectl_manifest.f5-ce-k8s-deployments]
 }
+
+resource "volterra_registration_approval" "k8s-ce" {
+  cluster_name    = local.ce_site_name
+  cluster_size    = 1
+  retry           = 5
+  wait_time       = 60
+  hostname        = "vp-manager-0"
+  provisioner "local-exec" {
+  command     = "sleep 30"
+  }
+  depends_on = [kubectl_manifest.f5-ce-k8s-services]
+}
+
+# temporary file which is needed for site cleanup
+resource "volterra_site_state" "site" {
+  name            = local.ce_site_name
+  state           = "DECOMMISSIONING"
+  when            = "delete"
+  retry           = 5
+  wait_time       = 60
+}
+
 ################################################################################
 # F5 XC LBs and Pools
 ################################################################################
@@ -639,7 +657,7 @@ resource "volterra_origin_pool" "chatbot" {
       outside_network = true
       site_locator {
         site {
-          name      = "aigw-eks"
+          name      = local.ce_site_name
           namespace = "system"
           }
         }
@@ -689,7 +707,7 @@ resource "volterra_http_loadbalancer" "chatbot" {
       origin_pools {
         pool {
           name = "chatbot"
-          namespace = var.xc_namespace
+          namespace = local.f5_xc_namespace
         }
       }
       advanced_options {
@@ -721,7 +739,7 @@ resource "volterra_origin_pool" "minio" {
       outside_network = true
       site_locator {
         site {
-          name      = "aigw-eks"
+          name      = local.ce_site_name
           namespace = "system"
           }
         }
@@ -771,7 +789,7 @@ resource "volterra_http_loadbalancer" "minio" {
       origin_pools {
         pool { 
           name = "minio"
-          namespace = var.xc_namespace
+          namespace = local.f5_xc_namespace
         }
       }
       advanced_options {
@@ -784,8 +802,8 @@ resource "volterra_http_loadbalancer" "minio" {
 
   default_route_pools {
       pool {
-        name = volterra_origin_pool.op.name
-        namespace = var.xc_namespace
+        name = volterra_origin_pool.minio.name
+        namespace = local.f5_xc_namespace
       }
       weight = 1
   }
@@ -813,7 +831,7 @@ resource "volterra_origin_pool" "prometheus" {
       outside_network = true
       site_locator {
         site {
-          name      = "aigw-eks"
+          name      = local.ce_site_name
           namespace = "system"
           }
         }
@@ -876,7 +894,7 @@ resource "volterra_origin_pool" "grafana" {
       outside_network = true
       site_locator {
         site {
-          name      = "aigw-eks"
+          name      = local.ce_site_name
           namespace = "system"
           }
         }
@@ -940,7 +958,7 @@ resource "volterra_origin_pool" "jaeger" {
       outside_network = true
       site_locator {
         site {
-          name      = "aigw-eks"
+          name      = local.ce_site_name
           namespace = "system"
           }
         }
