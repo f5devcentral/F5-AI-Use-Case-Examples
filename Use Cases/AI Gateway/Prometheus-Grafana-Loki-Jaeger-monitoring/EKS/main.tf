@@ -20,8 +20,8 @@ locals {
   f5_xc_jaeger_dns = ["jaeger.example.com"]
 
   # nginx one and plus licenses
-  nginx_one_jwt     = var.nginx_one_jwt
-  nginx_plus_jwt    = var.nginx_plus_jwt
+  nginx_one_jwt     = ""
+  nginx_plus_jwt    = ""
   nginx_registry    = "private-registry.f5.com"
   nginx_pwd         = "none"
 
