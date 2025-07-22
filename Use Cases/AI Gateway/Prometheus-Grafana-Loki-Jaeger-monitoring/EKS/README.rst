@@ -25,7 +25,7 @@ Create a token
 -----------------------
 - Login to F5 Distributed Cloud, click on `Multi-Cloud-Connect`, navigate to `Site Management` and then to `Site Tokens`
 
-- Create a site token with CE site name `aigw-eks` and copy the ID & name. **NOTE: MAKE SURE TOKEN IS NEWLY CREATED **
+- Create a site token with CE site name `aigw-eks` and copy the ID & name. **NOTE: MAKE SURE TOKEN IS NEWLY CREATED**
 
 - Navigate to `Administration` menu and create a namespace provided in line number 10 in main.tf.
 
