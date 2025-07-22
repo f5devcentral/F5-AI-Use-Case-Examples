@@ -11,14 +11,14 @@ Setup Diagram
 Prerequisites
 ***************
 
-* [F5 Distributed Cloud Account(F5XC)](https://console.ves.volterra.io/signup/usage_plan)
-  * [F5XC API certificate](https://docs.cloud.f5.com/docs/how-to/user-mgmt/credentials)
-  * [User Domain delegated](https://docs.cloud.f5.com/docs/how-to/app-networking/domain-delegation)
-* [AWS Account](https://aws.amazon.com)- Due to the assets being created, free tier will not work.
+* `F5 Distributed Cloud Account (F5XC) <https://console.ves.volterra.io/signup/usage_plan>`_ 
+    * `F5XC API certificate <https://docs.cloud.f5.com/docs/how-to/user-mgmt/credentials>`_
+    * `User Domain delegated <https://docs.cloud.f5.com/docs/how-to/app-networking/domain-delegation>`_
+* `AWS Account <https://aws.amazon.com>`_ - Due to the assets being created, free tier will not work.
   * Please make sure resources like VPC and Elastic IP's are below the threshold limit in that aws region
-* [NGINX ONE_License](https://www.f5.com/products/nginx/one) - Access to NGINX ONE license is needed for ai gateway.
-* [NGINX PLUS_License](https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-plus/) - Access to NGINX PLUS license is needed for ai gateway.
-* [OpenAI_API_Key](https://platform.openai.com/api-keys) - Optional but if use case involves OpenAI then api key is needed for ai gateway.
+* `NGINX ONE_License <https://www.f5.com/products/nginx/one>`_ - Access to NGINX ONE license is needed for ai gateway.
+* `NGINX PLUS_License <https://docs.nginx.com/nginx/admin-guide/installing-nginx/installing-nginx-plus/>`_ - Access to NGINX PLUS license is needed for ai gateway.
+* `OpenAI_API_Key <https://platform.openai.com/api-keys>`_ - Optional but if use case involves OpenAI then api key is needed for ai gateway.
 
 
 Create a token
