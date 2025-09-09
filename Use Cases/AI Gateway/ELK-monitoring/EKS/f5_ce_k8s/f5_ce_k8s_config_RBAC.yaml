@@ -118,6 +118,6 @@ data:
     PrivateNIC: eth0
     SkipStages: ["osSetup", "etcd", "kubelet", "master", "voucher", "workload", "controlWorkload", "csi"]
     # Update below with token value created in F5 XC
-    Token: <your-token-here>
+    Token: "<your-token-here>"
     CertifiedHardware: k8s-minikube-voltmesh
 ---
