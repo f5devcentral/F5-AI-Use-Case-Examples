@@ -40,7 +40,7 @@ Execution Steps
 **STEP 3:** In main.tf file update values in locals section which contains variables of AWS Infra, F5 XC and NGINX licenses.
   1. Make sure valid NGINX Plus and NGINX One licenses are updated as per their fields. 
   2. Next copy your F5 XC .p12 file to this folder and update line numbers 34 (.p12 file name) and 35 (tenant name) in main.tf. 
-  3. Also add an environment variable for this .p12 file password using command ``export VES_P12_PASSWORD=<p12-file-password>``
+  3. Also add an environment variable for this .p12 file password using command ``export VES_P12_PASSWORD="<p12-file-password>"``
 
 **STEP 4:** Open /f5_ce_k8s/f5_ce_k8s_config_RBAC.yaml and update cluster name (token name) and token (token value in quotes) fields at lines 110 and 121, copied from above `Create a token` section. make sure ce_site_name field in main.tf locals section matches with this token name.
 
