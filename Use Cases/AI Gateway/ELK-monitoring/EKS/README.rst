@@ -51,7 +51,7 @@ Execution Steps
 .. figure:: assets/site_online.png
 
 
-**STEP 7:** Open the chatbot load balancer domain in browser and have some chat conversation. Make sure you are getting the responses correctly as shown below. If you are seeing any openAI errors, check on third tab `GenAI Model` and keep value as empty.
+**STEP 7:** Open the chatbot load balancer domain in browser and have some chat conversation. Make sure you are getting the responses correctly as shown below. If you are seeing any openAI errors, check on third tab `GenAI Model` and keep value as empty since we are using ollama.
 
 .. figure:: assets/chatbot_conversation.png
 
